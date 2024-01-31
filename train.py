@@ -40,7 +40,7 @@ for t in range(block_size):
     target = y[t]
 
 # BUILD BATCHES TO TRAIN SEVERAL BLOCKS AT THE SAME TIME
-torch.manual_seed(1337)
+#torch.manual_seed(1337)
 batch_size = 4
 block_size = 8
 
@@ -90,7 +90,20 @@ class BigramLanguageModel(nn.Module):
             idx = torch.cat((idx, idx_next), dim=1)
         return idx
 
+# CREATE MODEL
 m = BigramLanguageModel(vocab_size)
 logits, loss  = m(xb, yb)
+
+# OPTIMIZER
+optimizer = torch.optim.AdamW(m.parameters(), lr=1e-3)
+
+batch_size = 32
+for steps in range(10000):
+    xb, yb = get_batch('train')
+
+    logits, loss = m(xb, yb)
+    optimizer.zero_grad(set_to_none=True)
+    loss.backward()
+    optimizer.step()
 
 print(decode(m.generate(idx=torch.zeros((1,1), dtype=torch.long), max_new_tokens=100)[0].tolist()))
